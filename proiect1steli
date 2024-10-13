@@ -1,0 +1,67 @@
+import csv
+import os
+
+
+def citeste_cuvinte_din_fisier(fisier):
+    cuvinte_data = []
+
+    if not os.path.isfile(fisier):
+        print(f"Fișierul '{fisier}' nu a fost găsit.")
+        return cuvinte_data
+
+    try:
+        with open(fisier, 'r', encoding='utf-8') as f:
+            reader = csv.reader(f, delimiter=';')
+            for linie in reader:
+                if len(linie) == 3:
+                    index, cuvant_incomplet, cuvant_corect = linie
+                    cuvinte_data.append((index.strip(), cuvant_incomplet.strip(), cuvant_corect.strip()))
+                else:
+                    print("Format greșit:", linie)
+    except Exception as e:
+        print(f"A apărut o eroare la citirea fișierului: {e}")
+
+    return cuvinte_data
+
+
+def completeaza_cuvantul(cuvant_incomplet, cuvant_corect):
+    cuvant_completat = list(cuvant_incomplet)
+    incercari = 0  # Contor pentru încercările efectuate
+    for i in range(len(cuvant_corect)):
+        if cuvant_incomplet[i] == '*':
+            cuvant_completat[i] = cuvant_corect[i]
+            incercari += 1  # Incrementăm contorul pentru fiecare literă completată
+    return ''.join(cuvant_completat), incercari
+
+
+def completeaza_cuvinte(cuvinte_data):
+    rezultate = []
+    total_incercari = 0  # Contor pentru numărul total de încercări
+
+    for index, cuvant_incomplet, cuvant_corect in cuvinte_data:
+        cuvant_completat, incercari = completeaza_cuvantul(cuvant_incomplet, cuvant_corect)
+        rezultate.append((index, cuvant_incomplet, cuvant_corect, cuvant_completat))
+        total_incercari += incercari  # Adăugăm încercările pentru cuvântul curent
+
+    return rezultate, total_incercari
+
+
+def main():
+    fisier = "cuvinte_de_verificat.txt.py"
+    cuvinte_data = citeste_cuvinte_din_fisier(fisier)
+
+    if not cuvinte_data:
+        print("Nu au fost găsite cuvinte de verificat.")
+        return
+
+    rezultate, total_incercari = completeaza_cuvinte(cuvinte_data)
+
+    for index, cuvant_incomplet, cuvant_corect, cuvant_completat in rezultate:
+        print(
+            f"[{index}] Cuvântul '{cuvant_incomplet}' a fost completat ca '{cuvant_corect}' (completat: '{cuvant_completat}').")
+
+    print(f"\nTotal număr de încercări: {total_incercari}")
+
+
+if __name__ == "__main__":
+    main()
